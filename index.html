@@ -63,8 +63,32 @@
   <div class="container">
 
     <div class="main-content">
+
       <h1>Subtraction</h1>
       <p class="lead">Pick any two numbers you want!</p>
+
+      <div class="row">
+        <div class="col-xs-3 col-xs-offset-2">
+          <div class="input-group input-group-lg pull-right">
+            <input id="minuend" type="number" class="form-control" placeholder="0">
+          </div>
+        </div>
+        <div class="col-xs-1 equation-text">
+          -
+        </div>
+        <div class="col-xs-3">
+          <div class="input-group input-group-lg">
+            <input id="subtrahend" type="number" class="form-control" placeholder="0">
+          </div>
+        </div>
+        <div class="col-xs-1 equation-text">
+          =
+        </div>
+        <div id="difference" class="col-xs-2 equation-text" style="text-align: left">
+          0
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -81,6 +105,13 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
   <script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
+
+  <!-- D3 visualization library -->
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+
+  <!-- App logic -->
+  <script src="math-sidekick.js"></script>
+
 </body>
 
 </html>
