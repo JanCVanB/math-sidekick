@@ -12,3 +12,7 @@ body {
 .equation-text {
   font-size: 28pt;
 }
+#difference {
+  font-size: 20pt;
+  width: 100%;
+}
