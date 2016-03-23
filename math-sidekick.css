@@ -1,0 +1,11 @@
+body {
+  padding-top: 50px;
+}
+.navbar-logo {
+  height: 30px;
+  margin: 10px 10px 10px 0;
+}
+.main-content {
+  padding: 40px 15px;
+  text-align: center;
+}
