@@ -119,38 +119,69 @@ function updateVisualization(onesData, tensData) {
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
   var startLabelClass = getSpecialLabelClass('start')
   var finishLabelClass = getSpecialLabelClass('finish')
+  var checkpointLabelClass = getSpecialLabelClass('checkpoint')
   var onesTicks = svg.selectAll('.' + onesTickClass).data(onesData)
   var tensTicks = svg.selectAll('.' + tensTickClass).data(tensData)
   var onesTickLabels = svg.selectAll('.' + onesTickLabelClass).data(onesData)
   var tensTickLabels = svg.selectAll('.' + tensTickLabelClass).data(tensData)
   var minuendData = []
   var subtrahendData = []
+  var checkpointData = []
   if (onesData.length > 0) {
     minuendData = [minuend]
     subtrahendData = [subtrahend]
+    var n = subtrahend
+    var power = 0
+    while (true) {
+      if (minuend > subtrahend) {
+        n += Math.pow(10, power)
+      } else {
+        n -= Math.pow(10, power)
+      }
+      if (n === minuend) {
+        break
+      }
+      checkpointData.push(n)
+      if (n % Math.pow(10, power + 1) === 0) {
+        power += 1
+      }
+      if (minuend > subtrahend) {
+        if ((minuend - n) < Math.pow(10, power)) {
+          power -= 1
+        }
+      } else {
+        if ((n - minuend) < Math.pow(10, power)) {
+          power -= 1
+        }
+      }
+    }
   }
   var minuendLabel = svg.selectAll('.' + minuendLabelClass).data(minuendData)
   var subtrahendLabel = svg.selectAll('.' + subtrahendLabelClass).data(subtrahendData)
   var startLabel = svg.selectAll('.' + startLabelClass).data(subtrahendData)
   var finishLabel = svg.selectAll('.' + finishLabelClass).data(minuendData)
+  var checkpointLabel = svg.selectAll('.' + checkpointLabelClass).data(checkpointData)
 
   updateTicks(onesTicks, 1)
   updateTicks(tensTicks, 10)
   updateTickLabels(onesTickLabels)
   updateTickLabels(tensTickLabels)
-  updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
+  updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
+                      checkpointLabel)
 
   enterTicks(onesTicks, 1)
   enterTicks(tensTicks, 10)
   enterTickLabels(onesTickLabels, 1)
   enterTickLabels(tensTickLabels, 10)
-  enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
+  enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
+                     checkpointLabel)
 
   exitTicks(onesTicks)
   exitTicks(tensTicks)
   exitTickLabels(onesTickLabels)
   exitTickLabels(tensTickLabels)
-  exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
+  exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
+                    checkpointLabel)
 }
 
 function getTickClass(multiple) {
@@ -178,6 +209,8 @@ function getSpecialLabelClass(id) {
     return 'startLabel'
   } else if (id === 'finish') {
     return 'finishLabel'
+  } else if (id === 'checkpoint') {
+    return 'checkpointLabel'
   }
 }
 
@@ -204,7 +237,7 @@ function updateTickLabels(labels) {
 }
 
 function updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
-                             finishLabel) {
+                             finishLabel, checkpointLabel) {
   minuendLabel
     .transition()
     .duration(transitionDuration)
@@ -218,6 +251,10 @@ function updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
     .duration(transitionDuration)
     .attr('x', getNumberTickX)
   finishLabel
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+  checkpointLabel
     .transition()
     .duration(transitionDuration)
     .attr('x', getNumberTickX)
@@ -277,11 +314,26 @@ function enterTickLabels(labels, multiple) {
 }
 
 function enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
-                            finishLabel) {
+                            finishLabel, checkpointLabel) {
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
   var startLabelClass = getSpecialLabelClass('start')
   var finishLabelClass = getSpecialLabelClass('finish')
+  var checkpointLabelClass = getSpecialLabelClass('checkpoint')
+  checkpointLabel
+    .enter()
+    .append('text')
+    .attr('class', checkpointLabelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', specialNumberLabelY)
+    .attr('text-anchor', 'middle')
+    .text(function(d) {
+      return d
+    })
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#ccc')
   minuendLabel
     .enter()
     .append('text')
@@ -355,7 +407,7 @@ function exitTickLabels(labels) {
 }
 
 function exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
-                           finishLabel) {
+                           finishLabel, checkpointLabel) {
   minuendLabel
     .exit()
     .transition()
@@ -375,6 +427,12 @@ function exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
     .attr('fill', '#fff')
     .remove()
   finishLabel
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+  checkpointLabel
     .exit()
     .transition()
     .duration(transitionDuration)
