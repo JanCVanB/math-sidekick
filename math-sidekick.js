@@ -32,212 +32,6 @@ const tickLabelY = numberLineY + 20
 const specialLabelY = tensTickYTop - 20
 const transitionDuration = 750
 
-function updateSvgWidth(svg) {
-  svgWidth = svg.style('width')
-  numberLineXRight = parseInt(svgWidth, 10) - numberLineXMargin
-}
-
-function updateTickXScaling(minShown, maxShown) {
-  tickXMinimumValue = minShown
-  tickXScalingFactor = (parseInt(svgWidth, 10) - 2 * tickXOffset) / (maxShown - minShown)
-}
-
-function getNumberTickX(d) {
-  return (d - tickXMinimumValue) * tickXScalingFactor + tickXOffset
-}
-
-function initializeVisualization() {
-  svg = d3.select('.main-content')
-    .append('svg')
-    .attr('width', '100%')
-    .attr('height', 300)
-  updateSvgWidth(svg)
-  svg
-    .append('line')
-    .attr('x1', numberLineXLeft)
-    .attr('x2', numberLineXRight)
-    .attr('y1', numberLineY)
-    .attr('y2', numberLineY)
-    .attr('stroke', '#000')
-    .attr('stroke-width', 3)
-}
-
-function getTickClass(multiple) {
-  if (multiple == 1) {
-    return 'onesTick'
-  } else if (multiple === 10) {
-    return 'tensTick'
-  }
-}
-
-function getTickLabelClass(multiple) {
-  if (multiple == 1) {
-    return 'onesTickLabel'
-  } else if (multiple === 10) {
-    return 'tensTickLabel'
-  }
-}
-
-function getSpecialLabelClass(id) {
-  if (id === 'minuend') {
-    return 'minuendLabel'
-  } else if (id === 'subtrahend') {
-    return 'subtrahendLabel'
-  }
-}
-
-function getTickWidth(multiple) {
-  if (multiple == 1) {
-    return 1
-  } else if (multiple === 10) {
-    return 3
-  }
-}
-
-function getTickYTop(multiple) {
-  if (multiple === 1) {
-    return onesTickYTop
-  } else if (multiple === 10) {
-    return tensTickYTop
-  }
-}
-
-function enterTicks(ticks, multiple) {
-  var tickClass = getTickClass(multiple)
-  var tickWidth = getTickWidth(multiple)
-  var tickYTop = getTickYTop(multiple)
-  ticks
-    .enter()
-    .append('line')
-    .attr('class', tickClass)
-    .attr('x1', getNumberTickX)
-    .attr('x2', getNumberTickX)
-    .attr('y1', numberLineY)
-    .attr('y2', numberLineY)
-    .attr('stroke', '#000')
-    .attr('stroke-width', tickWidth)
-    .transition()
-    .duration(transitionDuration)
-    .attr('y2', tickYTop)
-}
-
-function updateTicks(ticks, multiple) {
-  var tickYTop = getTickYTop(multiple)
-  x = ticks
-    .transition()
-    .duration(transitionDuration)
-    .attr('x1', getNumberTickX)
-    .attr('x2', getNumberTickX)
-    .attr('y1', numberLineY)
-    .attr('y2', tickYTop)
-}
-
-function exitTicks(ticks) {
-  ticks
-    .exit()
-    .transition()
-    .duration(transitionDuration)
-    .attr('y2', numberLineY)
-    .remove()
-}
-
-function enterTickLabels(labels, multiple) {
-  var labelClass = getTickLabelClass(multiple)
-  labels
-    .enter()
-    .append('text')
-    .attr('class', labelClass)
-    .attr('x', getNumberTickX)
-    .attr('y', tickLabelY)
-    .attr('text-anchor', 'middle')
-    .text(function(d) {
-      return d
-    })
-    .attr('fill', '#fff')
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#000')
-}
-
-function updateTickLabels(labels) {
-  labels
-    .transition()
-    .duration(transitionDuration)
-    .attr('x', getNumberTickX)
-}
-
-function exitTickLabels(labels) {
-  labels
-    .exit()
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#fff')
-    .remove()
-}
-
-function enterSpecialLabels(minuendLabel, subtrahendLabel) {
-  var minuendLabelClass = getSpecialLabelClass('minuend')
-  var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
-  minuendLabel
-    .enter()
-    .append('text')
-    .attr('class', minuendLabelClass)
-    .attr('x', getNumberTickX)
-    .attr('y', specialLabelY)
-    .attr('text-anchor', 'middle')
-    .text(function(d) {
-      return d
-    })
-    .attr('fill', '#fff')
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#000')
-  subtrahendLabel
-    .enter()
-    .append('text')
-    .attr('class', subtrahendLabelClass)
-    .attr('x', getNumberTickX)
-    .attr('y', specialLabelY)
-    .attr('text-anchor', 'middle')
-    .text(function(d) {
-      return d
-    })
-    .attr('fill', '#fff')
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#000')
-}
-
-function updateSpecialLabels(minuendLabel, subtrahendLabel) {
-  minuendLabel
-    .transition()
-    .duration(transitionDuration)
-    .attr('x', getNumberTickX)
-  subtrahendLabel
-    .transition()
-    .duration(transitionDuration)
-    .attr('x', getNumberTickX)
-}
-
-function exitSpecialLabels(minuendLabel, subtrahendLabel) {
-  minuendLabel
-    .exit()
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#fff')
-    .remove()
-  subtrahendLabel
-    .exit()
-    .transition()
-    .duration(transitionDuration)
-    .attr('fill', '#fff')
-    .remove()
-}
-
-function isAMultipleOfTen(number) {
-  return number % 10 === 0
-}
-
 function onNewMinuendAndSubtrahend() {
   updateSvgWidth(svg)
 
@@ -294,6 +88,20 @@ function onNewMinuendAndSubtrahend() {
   }, 1.1 * transitionDuration)
 }
 
+function updateSvgWidth(svg) {
+  svgWidth = svg.style('width')
+  numberLineXRight = parseInt(svgWidth, 10) - numberLineXMargin
+}
+
+function isAMultipleOfTen(number) {
+  return number % 10 === 0
+}
+
+function updateTickXScaling(minShown, maxShown) {
+  tickXMinimumValue = minShown
+  tickXScalingFactor = (parseInt(svgWidth, 10) - 2 * tickXOffset) / (maxShown - minShown)
+}
+
 function updateVisualization(onesData, tensData) {
   var onesTickClass = getTickClass(1)
   var tensTickClass = getTickClass(10)
@@ -331,6 +139,198 @@ function updateVisualization(onesData, tensData) {
   exitTickLabels(onesTickLabels)
   exitTickLabels(tensTickLabels)
   exitSpecialLabels(minuendLabel, subtrahendLabel)
+}
+
+function getTickClass(multiple) {
+  if (multiple == 1) {
+    return 'onesTick'
+  } else if (multiple === 10) {
+    return 'tensTick'
+  }
+}
+
+function getTickLabelClass(multiple) {
+  if (multiple == 1) {
+    return 'onesTickLabel'
+  } else if (multiple === 10) {
+    return 'tensTickLabel'
+  }
+}
+
+function getSpecialLabelClass(id) {
+  if (id === 'minuend') {
+    return 'minuendLabel'
+  } else if (id === 'subtrahend') {
+    return 'subtrahendLabel'
+  }
+}
+
+function updateTicks(ticks, multiple) {
+  var tickYTop = getTickYTop(multiple)
+  x = ticks
+    .transition()
+    .duration(transitionDuration)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', numberLineY)
+    .attr('y2', tickYTop)
+}
+
+function getNumberTickX(d) {
+  return (d - tickXMinimumValue) * tickXScalingFactor + tickXOffset
+}
+
+function updateTickLabels(labels) {
+  labels
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+}
+
+function updateSpecialLabels(minuendLabel, subtrahendLabel) {
+  minuendLabel
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+  subtrahendLabel
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+}
+
+function enterTicks(ticks, multiple) {
+  var tickClass = getTickClass(multiple)
+  var tickWidth = getTickWidth(multiple)
+  var tickYTop = getTickYTop(multiple)
+  ticks
+    .enter()
+    .append('line')
+    .attr('class', tickClass)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', numberLineY)
+    .attr('y2', numberLineY)
+    .attr('stroke', '#000')
+    .attr('stroke-width', tickWidth)
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', tickYTop)
+}
+
+function getTickWidth(multiple) {
+  if (multiple == 1) {
+    return 1
+  } else if (multiple === 10) {
+    return 3
+  }
+}
+
+function getTickYTop(multiple) {
+  if (multiple === 1) {
+    return onesTickYTop
+  } else if (multiple === 10) {
+    return tensTickYTop
+  }
+}
+
+function enterTickLabels(labels, multiple) {
+  var labelClass = getTickLabelClass(multiple)
+  labels
+    .enter()
+    .append('text')
+    .attr('class', labelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', tickLabelY)
+    .attr('text-anchor', 'middle')
+    .text(function(d) {
+      return d
+    })
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#000')
+}
+
+function enterSpecialLabels(minuendLabel, subtrahendLabel) {
+  var minuendLabelClass = getSpecialLabelClass('minuend')
+  var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
+  minuendLabel
+    .enter()
+    .append('text')
+    .attr('class', minuendLabelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', specialLabelY)
+    .attr('text-anchor', 'middle')
+    .text(function(d) {
+      return d
+    })
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#000')
+  subtrahendLabel
+    .enter()
+    .append('text')
+    .attr('class', subtrahendLabelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', specialLabelY)
+    .attr('text-anchor', 'middle')
+    .text(function(d) {
+      return d
+    })
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#000')
+}
+
+function exitTicks(ticks) {
+  ticks
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', numberLineY)
+    .remove()
+}
+
+function exitTickLabels(labels) {
+  labels
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+}
+
+function exitSpecialLabels(minuendLabel, subtrahendLabel) {
+  minuendLabel
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+  subtrahendLabel
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+}
+
+function initializeVisualization() {
+  svg = d3.select('.main-content')
+    .append('svg')
+    .attr('width', '100%')
+    .attr('height', 300)
+  updateSvgWidth(svg)
+  svg
+    .append('line')
+    .attr('x1', numberLineXLeft)
+    .attr('x2', numberLineXRight)
+    .attr('y1', numberLineY)
+    .attr('y2', numberLineY)
+    .attr('stroke', '#000')
+    .attr('stroke-width', 3)
 }
 
 initializeVisualization()
