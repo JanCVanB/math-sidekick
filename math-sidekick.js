@@ -29,7 +29,8 @@ const tickXOffset = (tensTickWidth + 1) / 2 + numberLineXMargin
 var tickXMinimumValue
 var tickXScalingFactor
 const tickLabelY = numberLineY + 20
-const specialLabelY = tensTickYTop - 20
+const specialNumberLabelY = tensTickYTop - 20
+const specialWordLabelY = specialNumberLabelY - 20
 const transitionDuration = 750
 
 function onNewMinuendAndSubtrahend() {
@@ -109,6 +110,8 @@ function updateVisualization(onesData, tensData) {
   var tensTickLabelClass = getTickLabelClass(10)
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
+  var startLabelClass = getSpecialLabelClass('start')
+  var finishLabelClass = getSpecialLabelClass('finish')
   var onesTicks = svg.selectAll('.' + onesTickClass).data(onesData)
   var tensTicks = svg.selectAll('.' + tensTickClass).data(tensData)
   var onesTickLabels = svg.selectAll('.' + onesTickLabelClass).data(onesData)
@@ -121,24 +124,26 @@ function updateVisualization(onesData, tensData) {
   }
   var minuendLabel = svg.selectAll('.' + minuendLabelClass).data(minuendData)
   var subtrahendLabel = svg.selectAll('.' + subtrahendLabelClass).data(subtrahendData)
+  var startLabel = svg.selectAll('.' + startLabelClass).data(subtrahendData)
+  var finishLabel = svg.selectAll('.' + finishLabelClass).data(minuendData)
 
   updateTicks(onesTicks, 1)
   updateTicks(tensTicks, 10)
   updateTickLabels(onesTickLabels)
   updateTickLabels(tensTickLabels)
-  updateSpecialLabels(minuendLabel, subtrahendLabel)
+  updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
 
   enterTicks(onesTicks, 1)
   enterTicks(tensTicks, 10)
   enterTickLabels(onesTickLabels, 1)
   enterTickLabels(tensTickLabels, 10)
-  enterSpecialLabels(minuendLabel, subtrahendLabel)
+  enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
 
   exitTicks(onesTicks)
   exitTicks(tensTicks)
   exitTickLabels(onesTickLabels)
   exitTickLabels(tensTickLabels)
-  exitSpecialLabels(minuendLabel, subtrahendLabel)
+  exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel)
 }
 
 function getTickClass(multiple) {
@@ -162,6 +167,10 @@ function getSpecialLabelClass(id) {
     return 'minuendLabel'
   } else if (id === 'subtrahend') {
     return 'subtrahendLabel'
+  } else if (id === 'start') {
+    return 'startLabel'
+  } else if (id === 'finish') {
+    return 'finishLabel'
   }
 }
 
@@ -187,12 +196,21 @@ function updateTickLabels(labels) {
     .attr('x', getNumberTickX)
 }
 
-function updateSpecialLabels(minuendLabel, subtrahendLabel) {
+function updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
+                             finishLabel) {
   minuendLabel
     .transition()
     .duration(transitionDuration)
     .attr('x', getNumberTickX)
   subtrahendLabel
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+  startLabel
+    .transition()
+    .duration(transitionDuration)
+    .attr('x', getNumberTickX)
+  finishLabel
     .transition()
     .duration(transitionDuration)
     .attr('x', getNumberTickX)
@@ -251,15 +269,18 @@ function enterTickLabels(labels, multiple) {
     .attr('fill', '#000')
 }
 
-function enterSpecialLabels(minuendLabel, subtrahendLabel) {
+function enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
+                            finishLabel) {
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
+  var startLabelClass = getSpecialLabelClass('start')
+  var finishLabelClass = getSpecialLabelClass('finish')
   minuendLabel
     .enter()
     .append('text')
     .attr('class', minuendLabelClass)
     .attr('x', getNumberTickX)
-    .attr('y', specialLabelY)
+    .attr('y', specialNumberLabelY)
     .attr('text-anchor', 'middle')
     .text(function(d) {
       return d
@@ -273,7 +294,7 @@ function enterSpecialLabels(minuendLabel, subtrahendLabel) {
     .append('text')
     .attr('class', subtrahendLabelClass)
     .attr('x', getNumberTickX)
-    .attr('y', specialLabelY)
+    .attr('y', specialNumberLabelY)
     .attr('text-anchor', 'middle')
     .text(function(d) {
       return d
@@ -282,6 +303,30 @@ function enterSpecialLabels(minuendLabel, subtrahendLabel) {
     .transition()
     .duration(transitionDuration)
     .attr('fill', '#000')
+  startLabel
+    .enter()
+    .append('text')
+    .attr('class', startLabelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', specialWordLabelY)
+    .attr('text-anchor', 'middle')
+    .text('Start')
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#093')
+  finishLabel
+    .enter()
+    .append('text')
+    .attr('class', finishLabelClass)
+    .attr('x', getNumberTickX)
+    .attr('y', specialWordLabelY)
+    .attr('text-anchor', 'middle')
+    .text('Finish')
+    .attr('fill', '#fff')
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#903')
 }
 
 function exitTicks(ticks) {
@@ -302,7 +347,8 @@ function exitTickLabels(labels) {
     .remove()
 }
 
-function exitSpecialLabels(minuendLabel, subtrahendLabel) {
+function exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
+                           finishLabel) {
   minuendLabel
     .exit()
     .transition()
@@ -310,6 +356,18 @@ function exitSpecialLabels(minuendLabel, subtrahendLabel) {
     .attr('fill', '#fff')
     .remove()
   subtrahendLabel
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+  startLabel
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('fill', '#fff')
+    .remove()
+  finishLabel
     .exit()
     .transition()
     .duration(transitionDuration)
