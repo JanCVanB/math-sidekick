@@ -67,17 +67,24 @@ function onNewMinuendAndSubtrahend() {
   var maxShown = maxExist
   updateTickXScaling(minShown, maxShown)
 
+  var minuendZoomLeftPad = minuend === minInput ? 1 : 3
+  var minuendZoomRightPad = minuend === minInput ? 3 : 1
+  var subtrahendZoomLeftPad = subtrahend === minInput ? 1 : 3
+  var subtrahendZoomRightPad = subtrahend === minInput ? 3 : 1
+
   updateVisualization([], [])
   setTimeout(function() {
     updateVisualization(onesData, tensData)
     setTimeout(function() {
-      updateTickXScaling(_.max([minShown, minInput - 1]), _.min([maxShown, minInput + 3]))
+      updateTickXScaling(_.max([minShown, subtrahend - subtrahendZoomLeftPad]),
+                         _.min([maxShown, subtrahend + subtrahendZoomRightPad]))
       updateVisualization(onesData, tensData)
       setTimeout(function() {
         updateTickXScaling(minShown, maxShown)
         updateVisualization(onesData, tensData)
         setTimeout(function() {
-          updateTickXScaling(_.max([minShown, maxInput - 3]), _.min([maxShown, maxInput + 1]))
+          updateTickXScaling(_.max([minShown, minuend - minuendZoomLeftPad]),
+                             _.min([maxShown, minuend + minuendZoomRightPad]))
           updateVisualization(onesData, tensData)
           setTimeout(function() {
             updateTickXScaling(minShown, maxShown)
