@@ -2,4 +2,4 @@
 
 Math visualization app for kids
 
-<img src="math-sidekick-big.png" align="center" width="300px">
+<img src="images/math-sidekick-big.png" align="center" width="300px">
