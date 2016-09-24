@@ -1,0 +1,14 @@
+{
+  "name": "math-sidekick",
+  "version": "0.1.0",
+  "description": "Math visualization app for kids",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jvanbrug/math-sidekick.git"
+  },
+  "author": "Jan Van Bruggen <jancvanbruggen@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/jvanbrug/math-sidekick/issues"
+  },
+  "homepage": "http://mathsidekick.com"
+}
