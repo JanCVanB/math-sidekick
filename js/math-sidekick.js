@@ -1,14 +1,11 @@
-var minuend = 0
-var subtrahend = 0
+var vm = new Vue({
+  el: '#subtraction',
+  data: {
+    minuend: null,
+    subtrahend: null
+  }
+})
 
-d3.select('#minuend').on('input', function() {
-  minuend = parseInt(this.value)
-  minuend = minuend ? minuend : 0
-})
-d3.select('#subtrahend').on('input', function() {
-  subtrahend = parseInt(this.value)
-  subtrahend = subtrahend ? subtrahend : 0
-})
 d3.select('#difference').on('click', function() {
   onNewMinuendAndSubtrahend()
 })
@@ -36,8 +33,8 @@ const transitionDuration = 750
 function onNewMinuendAndSubtrahend() {
   updateSvgWidth(svg)
 
-  var minInput = _.min([minuend, subtrahend])
-  var maxInput = _.max([minuend, subtrahend])
+  var minInput = _.min([vm.minuend, vm.subtrahend])
+  var maxInput = _.max([vm.minuend, vm.subtrahend])
   var minTen
   var maxTen
   if (minInput < 0) {
@@ -67,24 +64,24 @@ function onNewMinuendAndSubtrahend() {
   var maxShown = maxExist
   updateTickXScaling(minShown, maxShown)
 
-  var minuendZoomLeftPad = minuend === minInput ? 1 : 3
-  var minuendZoomRightPad = minuend === minInput ? 3 : 1
-  var subtrahendZoomLeftPad = subtrahend === minInput ? 1 : 3
-  var subtrahendZoomRightPad = subtrahend === minInput ? 3 : 1
+  var minuendZoomLeftPad = vm.minuend === minInput ? 1 : 3
+  var minuendZoomRightPad = vm.minuend === minInput ? 3 : 1
+  var subtrahendZoomLeftPad = vm.subtrahend === minInput ? 1 : 3
+  var subtrahendZoomRightPad = vm.subtrahend === minInput ? 3 : 1
 
   updateVisualization([], [])
   setTimeout(function() {
     updateVisualization(onesData, tensData)
     setTimeout(function() {
-      updateTickXScaling(_.max([minShown, subtrahend - subtrahendZoomLeftPad]),
-                         _.min([maxShown, subtrahend + subtrahendZoomRightPad]))
+      updateTickXScaling(_.max([minShown, vm.subtrahend - subtrahendZoomLeftPad]),
+                         _.min([maxShown, vm.subtrahend + subtrahendZoomRightPad]))
       updateVisualization(onesData, tensData)
       setTimeout(function() {
         updateTickXScaling(minShown, maxShown)
         updateVisualization(onesData, tensData)
         setTimeout(function() {
-          updateTickXScaling(_.max([minShown, minuend - minuendZoomLeftPad]),
-                             _.min([maxShown, minuend + minuendZoomRightPad]))
+          updateTickXScaling(_.max([minShown, vm.minuend - minuendZoomLeftPad]),
+                             _.min([maxShown, vm.minuend + minuendZoomRightPad]))
           updateVisualization(onesData, tensData)
           setTimeout(function() {
             updateTickXScaling(minShown, maxShown)
@@ -128,29 +125,29 @@ function updateVisualization(onesData, tensData) {
   var subtrahendData = []
   var checkpointData = []
   if (onesData.length > 0) {
-    minuendData = [minuend]
-    subtrahendData = [subtrahend]
-    var n = subtrahend
+    minuendData = [vm.minuend]
+    subtrahendData = [vm.subtrahend]
+    var n = vm.subtrahend
     var power = 0
     while (true) {
-      if (minuend > subtrahend) {
+      if (vm.minuend > vm.subtrahend) {
         n += Math.pow(10, power)
       } else {
         n -= Math.pow(10, power)
       }
-      if (n === minuend) {
+      if (n === vm.minuend) {
         break
       }
       checkpointData.push(n)
       if (n % Math.pow(10, power + 1) === 0) {
         power += 1
       }
-      if (minuend > subtrahend) {
-        if ((minuend - n) < Math.pow(10, power)) {
+      if (vm.minuend > vm.subtrahend) {
+        if ((vm.minuend - n) < Math.pow(10, power)) {
           power -= 1
         }
       } else {
-        if ((n - minuend) < Math.pow(10, power)) {
+        if ((n - vm.minuend) < Math.pow(10, power)) {
           power -= 1
         }
       }
