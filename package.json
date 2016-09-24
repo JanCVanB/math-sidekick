@@ -10,5 +10,8 @@
   "bugs": {
     "url": "https://github.com/jvanbrug/math-sidekick/issues"
   },
-  "homepage": "http://mathsidekick.com"
+  "homepage": "http://mathsidekick.com",
+  "dependencies": {
+    "vue": "^2.0.0-rc.6"
+  }
 }
