@@ -3,11 +3,12 @@ var vm = new Vue({
   data: {
     minuend: null,
     subtrahend: null
+  },
+  methods: {
+    newMinuendAndSubtrahend: function() {
+      showSubtraction()
+    }
   }
-})
-
-d3.select('#difference').on('click', function() {
-  onNewMinuendAndSubtrahend()
 })
 
 var svg
@@ -30,7 +31,7 @@ const specialNumberLabelY = tensTickYTop - 20
 const specialWordLabelY = specialNumberLabelY - 20
 const transitionDuration = 750
 
-function onNewMinuendAndSubtrahend() {
+function showSubtraction() {
   updateSvgWidth(svg)
 
   var minInput = _.min([vm.minuend, vm.subtrahend])
