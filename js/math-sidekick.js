@@ -6,7 +6,16 @@ var vm = new Vue({
   },
   computed: {
     largeBase: function() {
-      return 10
+      var base = 10
+      while (true) {
+        if (
+          base * 10 >= Math.abs(this.minuend) &&
+          base * 10 >= Math.abs(this.subtrahend)
+        ) {
+          return base
+        }
+        base *= 10
+      }
     },
     maxInput: function() {
       return _.max([this.minuend, this.subtrahend])
@@ -27,7 +36,7 @@ var vm = new Vue({
       return this.minuend > this.subtrahend
     },
     smallBase: function() {
-      return 1
+      return this.largeBase / 10
     },
     subtrahend: function() {
       return this.rawSubtrahend || 0
@@ -152,8 +161,7 @@ function updateTickXScaling(minShown, maxShown) {
 function updateVisualization(smallData, largeData) {
   var smallTickClass = getTickClass(1)
   var largeTickClass = getTickClass(10)
-  var smallTickLabelClass = getTickLabelClass(1)
-  var largeTickLabelClass = getTickLabelClass(10)
+  var tickLabelClass = getTickLabelClass()
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
   var startLabelClass = getSpecialLabelClass('start')
@@ -161,8 +169,7 @@ function updateVisualization(smallData, largeData) {
   var checkpointLabelClass = getSpecialLabelClass('checkpoint')
   var smallTicks = svg.selectAll('.' + smallTickClass).data(smallData)
   var largeTicks = svg.selectAll('.' + largeTickClass).data(largeData)
-  var smallTickLabels = svg.selectAll('.' + smallTickLabelClass).data(smallData)
-  var largeTickLabels = svg.selectAll('.' + largeTickLabelClass).data(largeData)
+  var tickLabels = svg.selectAll('.' + tickLabelClass).data(largeData)
   var minuendData = []
   var subtrahendData = []
   var checkpointData = []
@@ -203,22 +210,19 @@ function updateVisualization(smallData, largeData) {
 
   updateTicks(smallTicks, 1)
   updateTicks(largeTicks, 10)
-  updateTickLabels(smallTickLabels)
-  updateTickLabels(largeTickLabels)
+  updateTickLabels(tickLabels)
   updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                       checkpointLabel)
 
   enterTicks(smallTicks, 1)
   enterTicks(largeTicks, 10)
-  enterTickLabels(smallTickLabels, 1)
-  enterTickLabels(largeTickLabels, 10)
+  enterTickLabels(tickLabels, 10)
   enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                      checkpointLabel)
 
   exitTicks(smallTicks)
   exitTicks(largeTicks)
-  exitTickLabels(smallTickLabels)
-  exitTickLabels(largeTickLabels)
+  exitTickLabels(tickLabels)
   exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                     checkpointLabel)
 }
@@ -231,12 +235,8 @@ function getTickClass(multiple) {
   }
 }
 
-function getTickLabelClass(multiple) {
-  if (multiple == 1) {
-    return 'smallTickLabel'
-  } else if (multiple === 10) {
-    return 'largeTickLabel'
-  }
+function getTickLabelClass() {
+  return 'tickLabel'
 }
 
 function getSpecialLabelClass(id) {
