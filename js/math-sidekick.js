@@ -1,11 +1,43 @@
 var vm = new Vue({
   el: '#subtraction',
   data: {
-    minuend: null,
-    subtrahend: null
+    rawMinuend: null,
+    rawSubtrahend: null
+  },
+  computed: {
+    largeBase: function() {
+      return 10
+    },
+    maxInput: function() {
+      return _.max([this.minuend, this.subtrahend])
+    },
+    maxShown: function() {
+      return Math.ceil(this.maxInput / this.largeBase) * this.largeBase
+    },
+    minInput: function() {
+      return _.min([this.minuend, this.subtrahend])
+    },
+    minShown: function() {
+      return Math.floor(this.minInput / this.largeBase) * this.largeBase
+    },
+    minuend: function() {
+      return this.rawMinuend || 0
+    },
+    minuendIsGreaterThanSubtrahend: function() {
+      return this.minuend > this.subtrahend
+    },
+    smallBase: function() {
+      return 1
+    },
+    subtrahend: function() {
+      return this.rawSubtrahend || 0
+    }
   },
   methods: {
     newMinuendAndSubtrahend: function() {
+      if (this.minuend === this.subtrahend) {
+        return
+      }
       showSubtraction()
     }
   }
@@ -17,76 +49,38 @@ const numberLineXMargin = 20
 const numberLineXLeft = numberLineXMargin
 var numberLineXRight
 const numberLineY = 150
-const onesTickWidth = 1
-const onesTickLength = 20
-const onesTickYTop = numberLineY - onesTickLength
-const tensTickWidth = 3
-const tensTickLength = 40
-const tensTickYTop = numberLineY - tensTickLength
-const tickXOffset = (tensTickWidth + 1) / 2 + numberLineXMargin
+const smallTickWidth = 1
+const smallTickLength = 20
+const smallTickYTop = numberLineY - smallTickLength
+const largeTickWidth = 3
+const largeTickLength = 40
+const largeTickYTop = numberLineY - largeTickLength
+const tickXOffset = (largeTickWidth + 1) / 2 + numberLineXMargin
 var tickXMinimumValue
 var tickXScalingFactor
 const tickLabelY = numberLineY + 20
-const specialNumberLabelY = tensTickYTop - 20
+const specialNumberLabelY = largeTickYTop - 20
 const specialWordLabelY = specialNumberLabelY - 20
 const transitionDuration = 750
 
 function showSubtraction() {
   updateSvgWidth(svg)
 
-  var minInput = _.min([vm.minuend, vm.subtrahend])
-  var maxInput = _.max([vm.minuend, vm.subtrahend])
-  var minTen
-  var maxTen
-  if (minInput < 0) {
-    minTen = minInput - (10 + minInput % 10)
-  } else {
-    minTen = minInput - (minInput % 10)
-  }
-  if (maxInput <= 0) {
-    maxTen = maxInput - (maxInput % 10)
-  } else {
-    maxTen = maxInput + (10 - maxInput % 10)
-  }
-  var minExist = minTen
-  var maxExist = maxTen
-  if (minExist === 0 && maxShown === 0) {
-    minExist = -10
-    maxExist = 10
-  }
-  var onesData = _.range(minExist, maxExist + 1)
-  var tensData = _.filter(onesData, isAMultipleOfTen)
-  if (tensData.length === 0) {
-    tensData = [minShown, maxShown]
-  }
-  var onesData = _.difference(onesData, tensData)
+  var smallData = _.range(vm.minShown, vm.maxShown + 1, vm.smallBase)
+  var largeData = _.filter(smallData, isAMultipleOfTheLargeBase)
+  var smallData = _.difference(smallData, largeData)
 
-  var minShown = minExist
-  var maxShown = maxExist
-  updateTickXScaling(minShown, maxShown)
-
-  var minuendZoomLeftPad = vm.minuend === minInput ? 1 : 3
-  var minuendZoomRightPad = vm.minuend === minInput ? 3 : 1
-  var subtrahendZoomLeftPad = vm.subtrahend === minInput ? 1 : 3
-  var subtrahendZoomRightPad = vm.subtrahend === minInput ? 3 : 1
-
-  updateVisualization([], [])
+  showNoData()
   setTimeout(function() {
-    updateVisualization(onesData, tensData)
+    showAllData(smallData, largeData)
     setTimeout(function() {
-      updateTickXScaling(_.max([minShown, vm.subtrahend - subtrahendZoomLeftPad]),
-                         _.min([maxShown, vm.subtrahend + subtrahendZoomRightPad]))
-      updateVisualization(onesData, tensData)
+      showSubtrahend(smallData, largeData)
       setTimeout(function() {
-        updateTickXScaling(minShown, maxShown)
-        updateVisualization(onesData, tensData)
+        showAllData(smallData, largeData)
         setTimeout(function() {
-          updateTickXScaling(_.max([minShown, vm.minuend - minuendZoomLeftPad]),
-                             _.min([maxShown, vm.minuend + minuendZoomRightPad]))
-          updateVisualization(onesData, tensData)
+          showMinuend(smallData, largeData)
           setTimeout(function() {
-            updateTickXScaling(minShown, maxShown)
-            updateVisualization(onesData, tensData)
+            showAllData(smallData, largeData)
           }, 2 * transitionDuration)
         }, 2 * transitionDuration)
       }, 2 * transitionDuration)
@@ -94,13 +88,60 @@ function showSubtraction() {
   }, 1.1 * transitionDuration)
 }
 
+function showNoData() {
+  updateVisualization([], [])
+}
+
+function showAllData(smallData, largeData) {
+  updateTickXScaling(vm.minShown, vm.maxShown)
+  updateVisualization(smallData, largeData)
+}
+
+function showSubtrahend(smallData, largeData) {
+  if (vm.minuendIsGreaterThanSubtrahend) {
+    var subtrahendZoomLeftPad = 1
+    var subtrahendZoomRightPad = 3
+  }
+  else {
+    var subtrahendZoomLeftPad = 3
+    var subtrahendZoomRightPad = 1
+  }
+  var numberSmallerThanSubtrahend = _.max([vm.minShown,
+    vm.subtrahend - subtrahendZoomLeftPad
+  ])
+  var numberLargerThanSubtrahend = _.min([vm.maxShown,
+    vm.subtrahend + subtrahendZoomRightPad
+  ])
+  updateTickXScaling(numberSmallerThanSubtrahend, numberLargerThanSubtrahend)
+  updateVisualization(smallData, largeData)
+}
+
+function showMinuend(smallData, largeData) {
+  if (vm.minuendIsGreaterThanSubtrahend) {
+    var minuendZoomLeftPad = 3
+    var minuendZoomRightPad = 1
+  }
+  else {
+    var minuendZoomLeftPad = 1
+    var minuendZoomRightPad = 3
+  }
+  var numberSmallerThanMinuend = _.max([vm.minShown,
+    vm.minuend - minuendZoomLeftPad
+  ])
+  var numberLargerThanMinuend = _.min([vm.maxShown,
+    vm.minuend + minuendZoomRightPad
+  ])
+  updateTickXScaling(numberSmallerThanMinuend, numberLargerThanMinuend)
+  updateVisualization(smallData, largeData)
+}
+
 function updateSvgWidth(svg) {
   svgWidth = svg.style('width')
   numberLineXRight = parseInt(svgWidth, 10) - numberLineXMargin
 }
 
-function isAMultipleOfTen(number) {
-  return number % 10 === 0
+function isAMultipleOfTheLargeBase(number) {
+  return number % vm.largeBase === 0
 }
 
 function updateTickXScaling(minShown, maxShown) {
@@ -108,24 +149,24 @@ function updateTickXScaling(minShown, maxShown) {
   tickXScalingFactor = (parseInt(svgWidth, 10) - 2 * tickXOffset) / (maxShown - minShown)
 }
 
-function updateVisualization(onesData, tensData) {
-  var onesTickClass = getTickClass(1)
-  var tensTickClass = getTickClass(10)
-  var onesTickLabelClass = getTickLabelClass(1)
-  var tensTickLabelClass = getTickLabelClass(10)
+function updateVisualization(smallData, largeData) {
+  var smallTickClass = getTickClass(1)
+  var largeTickClass = getTickClass(10)
+  var smallTickLabelClass = getTickLabelClass(1)
+  var largeTickLabelClass = getTickLabelClass(10)
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
   var startLabelClass = getSpecialLabelClass('start')
   var finishLabelClass = getSpecialLabelClass('finish')
   var checkpointLabelClass = getSpecialLabelClass('checkpoint')
-  var onesTicks = svg.selectAll('.' + onesTickClass).data(onesData)
-  var tensTicks = svg.selectAll('.' + tensTickClass).data(tensData)
-  var onesTickLabels = svg.selectAll('.' + onesTickLabelClass).data(onesData)
-  var tensTickLabels = svg.selectAll('.' + tensTickLabelClass).data(tensData)
+  var smallTicks = svg.selectAll('.' + smallTickClass).data(smallData)
+  var largeTicks = svg.selectAll('.' + largeTickClass).data(largeData)
+  var smallTickLabels = svg.selectAll('.' + smallTickLabelClass).data(smallData)
+  var largeTickLabels = svg.selectAll('.' + largeTickLabelClass).data(largeData)
   var minuendData = []
   var subtrahendData = []
   var checkpointData = []
-  if (onesData.length > 0) {
+  if (smallData.length > 0) {
     minuendData = [vm.minuend]
     subtrahendData = [vm.subtrahend]
     var n = vm.subtrahend
@@ -160,41 +201,41 @@ function updateVisualization(onesData, tensData) {
   var finishLabel = svg.selectAll('.' + finishLabelClass).data(minuendData)
   var checkpointLabel = svg.selectAll('.' + checkpointLabelClass).data(checkpointData)
 
-  updateTicks(onesTicks, 1)
-  updateTicks(tensTicks, 10)
-  updateTickLabels(onesTickLabels)
-  updateTickLabels(tensTickLabels)
+  updateTicks(smallTicks, 1)
+  updateTicks(largeTicks, 10)
+  updateTickLabels(smallTickLabels)
+  updateTickLabels(largeTickLabels)
   updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                       checkpointLabel)
 
-  enterTicks(onesTicks, 1)
-  enterTicks(tensTicks, 10)
-  enterTickLabels(onesTickLabels, 1)
-  enterTickLabels(tensTickLabels, 10)
+  enterTicks(smallTicks, 1)
+  enterTicks(largeTicks, 10)
+  enterTickLabels(smallTickLabels, 1)
+  enterTickLabels(largeTickLabels, 10)
   enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                      checkpointLabel)
 
-  exitTicks(onesTicks)
-  exitTicks(tensTicks)
-  exitTickLabels(onesTickLabels)
-  exitTickLabels(tensTickLabels)
+  exitTicks(smallTicks)
+  exitTicks(largeTicks)
+  exitTickLabels(smallTickLabels)
+  exitTickLabels(largeTickLabels)
   exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                     checkpointLabel)
 }
 
 function getTickClass(multiple) {
   if (multiple == 1) {
-    return 'onesTick'
+    return 'smallTick'
   } else if (multiple === 10) {
-    return 'tensTick'
+    return 'largeTick'
   }
 }
 
 function getTickLabelClass(multiple) {
   if (multiple == 1) {
-    return 'onesTickLabel'
+    return 'smallTickLabel'
   } else if (multiple === 10) {
-    return 'tensTickLabel'
+    return 'largeTickLabel'
   }
 }
 
@@ -287,9 +328,9 @@ function getTickWidth(multiple) {
 
 function getTickYTop(multiple) {
   if (multiple === 1) {
-    return onesTickYTop
+    return smallTickYTop
   } else if (multiple === 10) {
-    return tensTickYTop
+    return largeTickYTop
   }
 }
 
