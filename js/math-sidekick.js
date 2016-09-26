@@ -1,3 +1,23 @@
+var svg
+var svgWidth
+const numberLineXMargin = 20
+const numberLineXLeft = numberLineXMargin
+var numberLineXRight
+const numberLineY = 150
+const smallTickWidth = 1
+const smallTickLength = 20
+const smallTickYTop = numberLineY - smallTickLength
+const largeTickWidth = 3
+const largeTickLength = 40
+const largeTickYTop = numberLineY - largeTickLength
+const tickXOffset = (largeTickWidth + 1) / 2 + numberLineXMargin
+var tickXMinimumValue
+var tickXScalingFactor
+const tickLabelY = numberLineY + 20
+const specialNumberLabelY = largeTickYTop - 20
+const specialWordLabelY = specialNumberLabelY - 20
+const transitionDuration = 750
+
 var vm = new Vue({
   el: '#subtraction',
   data: {
@@ -45,32 +65,25 @@ var vm = new Vue({
   methods: {
     newMinuendAndSubtrahend: function() {
       if (this.minuend === this.subtrahend) {
-        return
+        showNoData()
+      } else {
+        showSubtraction()
       }
-      showSubtraction()
     }
   }
 })
 
-var svg
-var svgWidth
-const numberLineXMargin = 20
-const numberLineXLeft = numberLineXMargin
-var numberLineXRight
-const numberLineY = 150
-const smallTickWidth = 1
-const smallTickLength = 20
-const smallTickYTop = numberLineY - smallTickLength
-const largeTickWidth = 3
-const largeTickLength = 40
-const largeTickYTop = numberLineY - largeTickLength
-const tickXOffset = (largeTickWidth + 1) / 2 + numberLineXMargin
-var tickXMinimumValue
-var tickXScalingFactor
-const tickLabelY = numberLineY + 20
-const specialNumberLabelY = largeTickYTop - 20
-const specialWordLabelY = specialNumberLabelY - 20
-const transitionDuration = 750
+function roundUp(number, base) {
+  return Math.ceil(number / base) * base
+}
+
+function roundDown(number, base) {
+  return Math.floor(number / base) * base
+}
+
+function showNoData() {
+  updateVisualization([], [], [])
+}
 
 function showSubtraction() {
   updateSvgWidth(svg)
@@ -172,18 +185,6 @@ function getCheckpointData() {
     }
   }
   return checkpointData
-}
-
-function roundUp(number, base) {
-  return Math.ceil(number / base) * base
-}
-
-function roundDown(number, base) {
-  return Math.floor(number / base) * base
-}
-
-function showNoData() {
-  updateVisualization([], [], [])
 }
 
 function showAllData(
