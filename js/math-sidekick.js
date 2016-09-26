@@ -9,8 +9,8 @@ var vm = new Vue({
       var base = 10
       while (true) {
         if (
-          base * 10 >= Math.abs(this.minuend) &&
-          base * 10 >= Math.abs(this.subtrahend)
+          base * 10 > Math.abs(this.minuend) &&
+          base * 10 > Math.abs(this.subtrahend)
         ) {
           return base
         }
@@ -21,13 +21,13 @@ var vm = new Vue({
       return _.max([this.minuend, this.subtrahend])
     },
     maxShown: function() {
-      return Math.ceil(this.maxInput / this.largeBase) * this.largeBase
+      return roundUp(this.maxInput, this.largeBase)
     },
     minInput: function() {
       return _.min([this.minuend, this.subtrahend])
     },
     minShown: function() {
-      return Math.floor(this.minInput / this.largeBase) * this.largeBase
+      return roundDown(this.minInput, this.largeBase)
     },
     minuend: function() {
       return this.rawMinuend || 0
@@ -129,32 +129,57 @@ function isAMultipleOfTheLargeBase(number) {
 
 function getCheckpointData() {
   var checkpointData = []
-  var n = vm.subtrahend
-  var power = 0
+  if (
+    isAMultipleOfTheLargeBase(vm.subtrahend) &&
+    vm.minuend > vm.subtrahend + vm.largeBase
+  ) {
+    var firstCheckpointBase = vm.largeBase
+  } else {
+    var firstCheckpointBase = vm.smallBase
+  }
+  if (vm.minuend > vm.subtrahend) {
+    var roundingDirection = roundUp
+  } else {
+    var roundingDirection = roundDown
+  }
+  var firstCheckpoint = roundingDirection(vm.subtrahend, firstCheckpointBase)
+  var nextCheckpoint = firstCheckpoint
+  var currentBase = vm.smallBase
   while (true) {
     if (vm.minuend > vm.subtrahend) {
-      n += Math.pow(10, power)
+      if (nextCheckpoint > vm.minuend) {
+        break
+      }
     } else {
-      n -= Math.pow(10, power)
+      if (nextCheckpoint < vm.minuend) {
+        break
+      }
     }
-    if (n === vm.minuend) {
-      break
+    checkpointData.push(nextCheckpoint)
+    if (isAMultipleOfTheLargeBase(nextCheckpoint)) {
+      currentBase = vm.largeBase
     }
-    checkpointData.push(n)
-    if (n % Math.pow(10, power + 1) === 0) {
-      power += 1
+    if (Math.abs(vm.minuend - nextCheckpoint) < vm.largeBase) {
+      currentBase = vm.smallBase
     }
     if (vm.minuend > vm.subtrahend) {
-      if ((vm.minuend - n) < Math.pow(10, power)) {
-        power -= 1
-      }
+      nextCheckpoint += currentBase
     } else {
-      if ((n - vm.minuend) < Math.pow(10, power)) {
-        power -= 1
-      }
+      nextCheckpoint -= currentBase
+    }
+    if (nextCheckpoint === vm.minuend) {
+      break
     }
   }
   return checkpointData
+}
+
+function roundUp(number, base) {
+  return Math.ceil(number / base) * base
+}
+
+function roundDown(number, base) {
+  return Math.floor(number / base) * base
 }
 
 function showNoData() {
