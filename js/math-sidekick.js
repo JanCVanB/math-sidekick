@@ -3,6 +3,7 @@ var svgWidth
 const numberLineXMargin = 20
 const numberLineXLeft = numberLineXMargin
 var numberLineXRight
+const numberLineWidth = 4
 const numberLineY = 150
 const smallTickWidth = 1
 const smallTickLength = 20
@@ -256,8 +257,10 @@ function updateTickXScaling(minShown, maxShown) {
 function updateVisualization(
   smallData, largeData, checkpointData, minuend, subtrahend
 ) {
-  var smallTickClass = getTickClass(1)
-  var largeTickClass = getTickClass(10)
+  var smallTickClass = getTickClass('small')
+  var largeTickClass = getTickClass('large')
+  var minuendTickClass = getSpecialTickClass('minuend')
+  var subtrahendTickClass = getSpecialTickClass('subtrahend')
   var tickLabelClass = getTickLabelClass()
   var minuendLabelClass = getSpecialLabelClass('minuend')
   var subtrahendLabelClass = getSpecialLabelClass('subtrahend')
@@ -275,36 +278,49 @@ function updateVisualization(
     var minuendData = []
     var subtrahendData = []
   }
+  var minuendTick = svg.selectAll('.' + minuendTickClass).data(minuendData)
+  var subtrahendTick = svg.selectAll('.' + subtrahendTickClass).data(subtrahendData)
   var minuendLabel = svg.selectAll('.' + minuendLabelClass).data(minuendData)
   var subtrahendLabel = svg.selectAll('.' + subtrahendLabelClass).data(subtrahendData)
   var startLabel = svg.selectAll('.' + startLabelClass).data(subtrahendData)
   var finishLabel = svg.selectAll('.' + finishLabelClass).data(minuendData)
   var checkpointLabel = svg.selectAll('.' + checkpointLabelClass).data(checkpointData)
 
-  updateTicks(smallTicks, 1)
-  updateTicks(largeTicks, 10)
+  updateTicks(smallTicks, 'small')
+  updateTicks(largeTicks, 'large')
+  updateSpecialTicks(minuendTick, subtrahendTick)
   updateTickLabels(tickLabels)
   updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                       checkpointLabel)
 
-  enterTicks(smallTicks, 1)
-  enterTicks(largeTicks, 10)
-  enterTickLabels(tickLabels, 10)
+  enterTicks(smallTicks, 'small')
+  enterTicks(largeTicks, 'large')
+  enterSpecialTicks(minuendTick, subtrahendTick)
+  enterTickLabels(tickLabels)
   enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                      checkpointLabel)
 
   exitTicks(smallTicks)
   exitTicks(largeTicks)
+  exitSpecialTicks(minuendTick, subtrahendTick)
   exitTickLabels(tickLabels)
   exitSpecialLabels(minuendLabel, subtrahendLabel, startLabel, finishLabel,
                     checkpointLabel)
 }
 
-function getTickClass(multiple) {
-  if (multiple == 1) {
+function getTickClass(tickType) {
+  if (tickType === 'small') {
     return 'smallTick'
-  } else if (multiple === 10) {
+  } else if (tickType === 'large') {
     return 'largeTick'
+  }
+}
+
+function getSpecialTickClass(tickType) {
+  if (tickType === 'minuend') {
+    return 'minuendTick'
+  } else if (tickType === 'subtrahend') {
+    return 'subtrahendTick'
   }
 }
 
@@ -312,33 +328,55 @@ function getTickLabelClass() {
   return 'tickLabel'
 }
 
-function getSpecialLabelClass(id) {
-  if (id === 'minuend') {
+function getSpecialLabelClass(labelType) {
+  if (labelType === 'minuend') {
     return 'minuendLabel'
-  } else if (id === 'subtrahend') {
+  } else if (labelType === 'subtrahend') {
     return 'subtrahendLabel'
-  } else if (id === 'start') {
+  } else if (labelType === 'start') {
     return 'startLabel'
-  } else if (id === 'finish') {
+  } else if (labelType === 'finish') {
     return 'finishLabel'
-  } else if (id === 'checkpoint') {
+  } else if (labelType === 'checkpoint') {
     return 'checkpointLabel'
   }
 }
 
-function updateTicks(ticks, multiple) {
-  var tickYTop = getTickYTop(multiple)
-  x = ticks
+function updateTicks(ticks, tickType) {
+  var tickYTop = getTickYTop(tickType)
+  ticks
     .transition()
     .duration(transitionDuration)
     .attr('x1', getNumberTickX)
     .attr('x2', getNumberTickX)
-    .attr('y1', numberLineY)
+    .attr('y1', getNumberTickYBottom)
     .attr('y2', tickYTop)
 }
 
 function getNumberTickX(d) {
   return (d - tickXMinimumValue) * tickXScalingFactor + tickXOffset
+}
+
+function getNumberTickYBottom() {
+  return numberLineY - numberLineWidth / 2
+}
+
+function updateSpecialTicks(minuendTick, subtrahendTick) {
+  var tickYTop = getTickYTop('large')
+  minuendTick
+    .transition()
+    .duration(transitionDuration)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', getNumberTickYBottom)
+    .attr('y2', tickYTop)
+  subtrahendTick
+    .transition()
+    .duration(transitionDuration)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', getNumberTickYBottom)
+    .attr('y2', tickYTop)
 }
 
 function updateTickLabels(labels) {
@@ -372,10 +410,10 @@ function updateSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
     .attr('x', getNumberTickX)
 }
 
-function enterTicks(ticks, multiple) {
-  var tickClass = getTickClass(multiple)
-  var tickWidth = getTickWidth(multiple)
-  var tickYTop = getTickYTop(multiple)
+function enterTicks(ticks, tickType) {
+  var tickClass = getTickClass(tickType)
+  var tickWidth = getTickWidth(tickType)
+  var tickYTop = getTickYTop(tickType)
   ticks
     .enter()
     .append('line')
@@ -391,24 +429,57 @@ function enterTicks(ticks, multiple) {
     .attr('y2', tickYTop)
 }
 
-function getTickWidth(multiple) {
-  if (multiple == 1) {
+function getTickWidth(tickType) {
+  if (tickType === 'small') {
     return 1
-  } else if (multiple === 10) {
+  } else if (tickType === 'large') {
     return 3
   }
 }
 
-function getTickYTop(multiple) {
-  if (multiple === 1) {
+function getTickYTop(tickType) {
+  if (tickType === 'small') {
     return smallTickYTop
-  } else if (multiple === 10) {
+  } else if (tickType === 'large') {
     return largeTickYTop
   }
 }
 
-function enterTickLabels(labels, multiple) {
-  var labelClass = getTickLabelClass(multiple)
+function enterSpecialTicks(minuendTick, subtrahendTick) {
+  var minuendTickClass = getSpecialTickClass('minuend')
+  var subtrahendTickClass = getSpecialTickClass('subtrahend')
+  var tickWidth = getTickWidth('large')
+  var tickYTop = getTickYTop('large')
+  minuendTick
+    .enter()
+    .append('line')
+    .attr('class', minuendTickClass)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', numberLineY)
+    .attr('y2', numberLineY)
+    .attr('stroke', '#903')
+    .attr('stroke-width', tickWidth)
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', tickYTop)
+  subtrahendTick
+    .enter()
+    .append('line')
+    .attr('class', subtrahendTickClass)
+    .attr('x1', getNumberTickX)
+    .attr('x2', getNumberTickX)
+    .attr('y1', numberLineY)
+    .attr('y2', numberLineY)
+    .attr('stroke', '#093')
+    .attr('stroke-width', tickWidth)
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', tickYTop)
+}
+
+function enterTickLabels(labels) {
+  var labelClass = getTickLabelClass()
   labels
     .enter()
     .append('text')
@@ -509,6 +580,21 @@ function exitTicks(ticks) {
     .remove()
 }
 
+function exitSpecialTicks(minuendTick, subtrahendTick) {
+  minuendTick
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', numberLineY)
+    .remove()
+  subtrahendTick
+    .exit()
+    .transition()
+    .duration(transitionDuration)
+    .attr('y2', numberLineY)
+    .remove()
+}
+
 function exitTickLabels(labels) {
   labels
     .exit()
@@ -565,7 +651,7 @@ function initializeVisualization() {
     .attr('y1', numberLineY)
     .attr('y2', numberLineY)
     .attr('stroke', '#000')
-    .attr('stroke-width', 3)
+    .attr('stroke-width', numberLineWidth)
 }
 
 initializeVisualization()
