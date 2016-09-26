@@ -119,8 +119,8 @@ function showSubtraction() {
 }
 
 function updateSvgWidth(svg) {
-  svgWidth = svg.style('width')
-  numberLineXRight = parseInt(svgWidth, 10) - numberLineXMargin
+  svgWidth = parseInt(svg.style('width'))
+  numberLineXRight = svgWidth - numberLineXMargin
 }
 
 function isAMultipleOfTheLargeBase(number) {
@@ -210,7 +210,7 @@ function showMinuend(
 
 function updateTickXScaling(minShown, maxShown) {
   tickXMinimumValue = minShown
-  tickXScalingFactor = (parseInt(svgWidth, 10) - 2 * tickXOffset) / (maxShown - minShown)
+  tickXScalingFactor = (svgWidth - 2 * tickXOffset) / (maxShown - minShown)
 }
 
 function updateVisualization(
