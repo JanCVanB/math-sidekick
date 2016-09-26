@@ -70,7 +70,7 @@
       <div class="row">
         <div class="col-xs-3 col-xs-offset-2">
           <div class="input-group input-group-lg pull-right">
-            <input v-model="rawMinuend" type="number" class="form-control" placeholder="0">
+            <input v-model="rawMinuend" @keyup.enter="newMinuendAndSubtrahend" type="number" class="form-control" placeholder="0">
           </div>
         </div>
         <div class="col-xs-1 equation-text">
@@ -78,7 +78,7 @@
         </div>
         <div class="col-xs-3">
           <div class="input-group input-group-lg">
-            <input v-model="rawSubtrahend" type="number" class="form-control" placeholder="0">
+            <input v-model="rawSubtrahend" @keyup.enter="newMinuendAndSubtrahend" type="number" class="form-control" placeholder="0">
           </div>
         </div>
         <div class="col-xs-1 equation-text">
