@@ -96,7 +96,13 @@ function showSubtraction() {
   var subtrahend = vm.subtrahend
   var minShown = vm.minShown
   var maxShown = vm.maxShown
-  var minuendIsGreaterThanSubtrahend = vm.minuendIsGreaterThanSubtrahend
+
+  var minuendZoomBounds = getMinuendZoomBounds()
+  var minuendZoomLeft = minuendZoomBounds.left
+  var minuendZoomRight = minuendZoomBounds.right
+  var subtrahendZoomBounds = getSubtrahendZoomBounds()
+  var subtrahendZoomLeft = subtrahendZoomBounds.left
+  var subtrahendZoomRight = subtrahendZoomBounds.right
 
   showNoData()
   setTimeout(function() {
@@ -107,7 +113,7 @@ function showSubtraction() {
     setTimeout(function() {
       showSubtrahend(
         smallData, largeData, checkpointData, minuend, subtrahend,
-        minShown, maxShown, minuendIsGreaterThanSubtrahend
+        minShown, maxShown, subtrahendZoomLeft, subtrahendZoomRight
       )
       setTimeout(function() {
         showAllData(
@@ -117,7 +123,7 @@ function showSubtraction() {
         setTimeout(function() {
           showMinuend(
             smallData, largeData, checkpointData, minuend, subtrahend,
-            minShown, maxShown, minuendIsGreaterThanSubtrahend
+            minShown, maxShown, minuendZoomLeft, minuendZoomRight
           )
           setTimeout(function() {
             showAllData(
@@ -187,6 +193,38 @@ function getCheckpointData() {
   return checkpointData
 }
 
+function getMinuendZoomBounds() {
+  var minuendZoomLeftPad = vm.minuendIsGreaterThanSubtrahend ? 3 : 1
+  var minuendZoomRightPad = vm.minuendIsGreaterThanSubtrahend ? 1 : 3
+  var minuendZoomLeft = vm.minuend - minuendZoomLeftPad * vm.smallBase
+  var minuendZoomRight = vm.minuend + minuendZoomRightPad * vm.smallBase
+  if (minuendZoomLeft < vm.minShown) {
+    minuendZoomLeft = vm.minShown
+    minuendZoomRight = vm.minShown + 4 * vm.smallBase
+  }
+  if (minuendZoomRight > vm.maxShown) {
+    minuendZoomRight = vm.maxShown
+    minuendZoomLeft = vm.maxShown - 4 * vm.smallBase
+  }
+  return { left: minuendZoomLeft, right: minuendZoomRight }
+}
+
+function getSubtrahendZoomBounds() {
+  var subtrahendZoomLeftPad = vm.minuendIsGreaterThanSubtrahend ? 1 : 3
+  var subtrahendZoomRightPad = vm.minuendIsGreaterThanSubtrahend ? 3 : 1
+  var subtrahendZoomLeft = vm.subtrahend - subtrahendZoomLeftPad * vm.smallBase
+  var subtrahendZoomRight = vm.subtrahend + subtrahendZoomRightPad * vm.smallBase
+  if (subtrahendZoomLeft < vm.minShown) {
+    subtrahendZoomLeft = vm.minShown
+    subtrahendZoomRight = vm.minShown + 4 * vm.smallBase
+  }
+  if (subtrahendZoomRight > vm.maxShown) {
+    subtrahendZoomRight = vm.maxShown
+    subtrahendZoomLeft = vm.maxShown - 4 * vm.smallBase
+  }
+  return { left: subtrahendZoomLeft, right: subtrahendZoomRight }
+}
+
 function showAllData(
   smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown
 ) {
@@ -196,41 +234,17 @@ function showAllData(
 
 function showSubtrahend(
   smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown,
-  minuendIsGreaterThanSubtrahend
+  subtrahendZoomLeft, subtrahendZoomRight
 ) {
-  if (minuendIsGreaterThanSubtrahend) {
-    var subtrahendZoomLeftPad = 1
-    var subtrahendZoomRightPad = 3
-  }
-  else {
-    var subtrahendZoomLeftPad = 3
-    var subtrahendZoomRightPad = 1
-  }
-  var numberSmallerThanSubtrahend = _.max([minShown,
-    subtrahend - subtrahendZoomLeftPad
-  ])
-  var numberLargerThanSubtrahend = _.min([maxShown,
-    subtrahend + subtrahendZoomRightPad
-  ])
-  updateTickXScaling(numberSmallerThanSubtrahend, numberLargerThanSubtrahend)
+  updateTickXScaling(subtrahendZoomLeft, subtrahendZoomRight)
   updateVisualization(smallData, largeData, checkpointData, minuend, subtrahend)
 }
 
 function showMinuend(
   smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown,
-  minuendIsGreaterThanSubtrahend
+  minuendZoomLeft, minuendZoomRight
 ) {
-  if (minuendIsGreaterThanSubtrahend) {
-    var minuendZoomLeftPad = 3
-    var minuendZoomRightPad = 1
-  }
-  else {
-    var minuendZoomLeftPad = 1
-    var minuendZoomRightPad = 3
-  }
-  var numberSmallerThanMinuend = _.max([minShown, minuend - minuendZoomLeftPad])
-  var numberLargerThanMinuend = _.min([maxShown, minuend + minuendZoomRightPad])
-  updateTickXScaling(numberSmallerThanMinuend, numberLargerThanMinuend)
+  updateTickXScaling(minuendZoomLeft, minuendZoomRight)
   updateVisualization(smallData, largeData, checkpointData, minuend, subtrahend)
 }
 
