@@ -15,7 +15,8 @@ const tickXOffset = (largeTickWidth + 1) / 2 + numberLineXMargin
 var tickXMinimumValue
 var tickXScalingFactor
 const tickLabelY = numberLineY + 20
-const specialNumberLabelY = largeTickYTop - 20
+const checkpointNumberLabelY = largeTickYTop - 20
+const specialNumberLabelY = checkpointNumberLabelY - 20
 const specialWordLabelY = specialNumberLabelY - 20
 const transitionDuration = 750
 
@@ -516,7 +517,7 @@ function enterSpecialLabels(minuendLabel, subtrahendLabel, startLabel,
     .append('text')
     .attr('class', checkpointLabelClass)
     .attr('x', getNumberTickX)
-    .attr('y', specialNumberLabelY)
+    .attr('y', checkpointNumberLabelY)
     .attr('text-anchor', 'middle')
     .text(function(d) {
       return d
