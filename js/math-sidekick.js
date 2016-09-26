@@ -158,11 +158,11 @@ function getCheckpointData() {
     var firstCheckpointBase = vm.smallBase
   }
   if (vm.minuend > vm.subtrahend) {
-    var roundingDirection = roundUp
+    var nudgingDirection = nudgeUp
   } else {
-    var roundingDirection = roundDown
+    var nudgingDirection = nudgeDown
   }
-  var firstCheckpoint = roundingDirection(vm.subtrahend, firstCheckpointBase)
+  var firstCheckpoint = nudgingDirection(vm.subtrahend, firstCheckpointBase)
   var nextCheckpoint = firstCheckpoint
   var currentBase = vm.smallBase
   while (true) {
@@ -192,6 +192,14 @@ function getCheckpointData() {
     }
   }
   return checkpointData
+}
+
+function nudgeUp(number, base) {
+  return roundUp(number + 1, base)
+}
+
+function nudgeDown(number, base) {
+  return roundDown(number - 1, base)
 }
 
 function getMinuendZoomBounds() {
