@@ -79,18 +79,38 @@ function showSubtraction() {
   var largeData = _.filter(smallData, isAMultipleOfTheLargeBase)
   var smallData = _.difference(smallData, largeData)
   var checkpointData = getCheckpointData()
+  var minuend = vm.minuend
+  var subtrahend = vm.subtrahend
+  var minShown = vm.minShown
+  var maxShown = vm.maxShown
+  var minuendIsGreaterThanSubtrahend = vm.minuendIsGreaterThanSubtrahend
 
   showNoData()
   setTimeout(function() {
-    showAllData(smallData, largeData, checkpointData)
+    showAllData(
+      smallData, largeData, checkpointData, minuend, subtrahend,
+      minShown, maxShown
+    )
     setTimeout(function() {
-      showSubtrahend(smallData, largeData, checkpointData)
+      showSubtrahend(
+        smallData, largeData, checkpointData, minuend, subtrahend,
+        minShown, maxShown, minuendIsGreaterThanSubtrahend
+      )
       setTimeout(function() {
-        showAllData(smallData, largeData, checkpointData)
+        showAllData(
+          smallData, largeData, checkpointData, minuend, subtrahend,
+          minShown, maxShown
+        )
         setTimeout(function() {
-          showMinuend(smallData, largeData, checkpointData)
+          showMinuend(
+            smallData, largeData, checkpointData, minuend, subtrahend,
+            minShown, maxShown, minuendIsGreaterThanSubtrahend
+          )
           setTimeout(function() {
-            showAllData(smallData, largeData, checkpointData)
+            showAllData(
+              smallData, largeData, checkpointData, minuend, subtrahend,
+              minShown, maxShown
+            )
           }, 2 * transitionDuration)
         }, 2 * transitionDuration)
       }, 2 * transitionDuration)
@@ -101,6 +121,10 @@ function showSubtraction() {
 function updateSvgWidth(svg) {
   svgWidth = svg.style('width')
   numberLineXRight = parseInt(svgWidth, 10) - numberLineXMargin
+}
+
+function isAMultipleOfTheLargeBase(number) {
+  return number % vm.largeBase === 0
 }
 
 function getCheckpointData() {
@@ -137,13 +161,18 @@ function showNoData() {
   updateVisualization([], [], [])
 }
 
-function showAllData(smallData, largeData, checkpointData) {
-  updateTickXScaling(vm.minShown, vm.maxShown)
-  updateVisualization(smallData, largeData, checkpointData)
+function showAllData(
+  smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown
+) {
+  updateTickXScaling(minShown, maxShown)
+  updateVisualization(smallData, largeData, checkpointData, minuend, subtrahend)
 }
 
-function showSubtrahend(smallData, largeData, checkpointData) {
-  if (vm.minuendIsGreaterThanSubtrahend) {
+function showSubtrahend(
+  smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown,
+  minuendIsGreaterThanSubtrahend
+) {
+  if (minuendIsGreaterThanSubtrahend) {
     var subtrahendZoomLeftPad = 1
     var subtrahendZoomRightPad = 3
   }
@@ -151,18 +180,21 @@ function showSubtrahend(smallData, largeData, checkpointData) {
     var subtrahendZoomLeftPad = 3
     var subtrahendZoomRightPad = 1
   }
-  var numberSmallerThanSubtrahend = _.max([vm.minShown,
-    vm.subtrahend - subtrahendZoomLeftPad
+  var numberSmallerThanSubtrahend = _.max([minShown,
+    subtrahend - subtrahendZoomLeftPad
   ])
-  var numberLargerThanSubtrahend = _.min([vm.maxShown,
-    vm.subtrahend + subtrahendZoomRightPad
+  var numberLargerThanSubtrahend = _.min([maxShown,
+    subtrahend + subtrahendZoomRightPad
   ])
   updateTickXScaling(numberSmallerThanSubtrahend, numberLargerThanSubtrahend)
-  updateVisualization(smallData, largeData, checkpointData)
+  updateVisualization(smallData, largeData, checkpointData, minuend, subtrahend)
 }
 
-function showMinuend(smallData, largeData, checkpointData) {
-  if (vm.minuendIsGreaterThanSubtrahend) {
+function showMinuend(
+  smallData, largeData, checkpointData, minuend, subtrahend, minShown, maxShown,
+  minuendIsGreaterThanSubtrahend
+) {
+  if (minuendIsGreaterThanSubtrahend) {
     var minuendZoomLeftPad = 3
     var minuendZoomRightPad = 1
   }
@@ -170,18 +202,10 @@ function showMinuend(smallData, largeData, checkpointData) {
     var minuendZoomLeftPad = 1
     var minuendZoomRightPad = 3
   }
-  var numberSmallerThanMinuend = _.max([vm.minShown,
-    vm.minuend - minuendZoomLeftPad
-  ])
-  var numberLargerThanMinuend = _.min([vm.maxShown,
-    vm.minuend + minuendZoomRightPad
-  ])
+  var numberSmallerThanMinuend = _.max([minShown, minuend - minuendZoomLeftPad])
+  var numberLargerThanMinuend = _.min([maxShown, minuend + minuendZoomRightPad])
   updateTickXScaling(numberSmallerThanMinuend, numberLargerThanMinuend)
-  updateVisualization(smallData, largeData, checkpointData)
-}
-
-function isAMultipleOfTheLargeBase(number) {
-  return number % vm.largeBase === 0
+  updateVisualization(smallData, largeData, checkpointData, minuend, subtrahend)
 }
 
 function updateTickXScaling(minShown, maxShown) {
@@ -189,7 +213,9 @@ function updateTickXScaling(minShown, maxShown) {
   tickXScalingFactor = (parseInt(svgWidth, 10) - 2 * tickXOffset) / (maxShown - minShown)
 }
 
-function updateVisualization(smallData, largeData, checkpointData) {
+function updateVisualization(
+  smallData, largeData, checkpointData, minuend, subtrahend
+) {
   var smallTickClass = getTickClass(1)
   var largeTickClass = getTickClass(10)
   var tickLabelClass = getTickLabelClass()
@@ -202,8 +228,8 @@ function updateVisualization(smallData, largeData, checkpointData) {
   var largeTicks = svg.selectAll('.' + largeTickClass).data(largeData)
   var tickLabels = svg.selectAll('.' + tickLabelClass).data(largeData)
   if (smallData.length > 0) {
-    var minuendData = [vm.minuend]
-    var subtrahendData = [vm.subtrahend]
+    var minuendData = [minuend]
+    var subtrahendData = [subtrahend]
   }
   else {
     var minuendData = []
